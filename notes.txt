@@ -1,0 +1,7 @@
+Mon Mar 25 18:27:17 IST 2024
+	This is just learning the 'nob' build tool/framework thing along with implementing a hash table in C.
+
+Sat Mar 30 23:59:01 IST 2024
+	Basic functionality of the hash table is implemented. Want to work on it more. 
+
+	Gotta put in more macros. Use generic Vectors instead of arrays. Lots of improvement to be made.

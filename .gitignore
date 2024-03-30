@@ -1,0 +1,48 @@
+# Ignore all
+*
+
+# But don't ignore these files
+!/.vscode/settings.json
+
+# But don't ignore these types of files
+!*.c
+!*.cpp
+!*.css
+!*.db
+!*.h
+!*.html
+!*.java
+!*.js
+!*.md
+!*.py
+!*.sql
+!*.rs
+!*.ts
+!*.txt
+!Makefile
+
+# Unignore all with extensions
+!*.*
+
+# Unignore all dirs
+!*/
+
+### Above combination will ignore all files without extension ###
+
+# Ignore files with extension `.class` & `.sm`
+*.class
+*.sm
+
+# Ignore the target directories in Rust project builds
+*/target
+
+# Ignore `bin` dir
+bin/
+# or
+*/bin/*
+
+# Unignore all `.jar` in `bin` dir
+!*/bin/*.jar
+
+# Ignore all `library.jar` in `bin` dir
+*/bin/library.jar
