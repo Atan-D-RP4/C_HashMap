@@ -23,15 +23,21 @@ int main(int argc, char **argv) {
 			nob_cmd_append(&cmd, "./main");
 			nob_da_append_many(&cmd, argv, argc);
 			if (!nob_cmd_run_sync(cmd)) return 1;
+			cmd.count = 0;
+			nob_cmd_append(&cmd, "rm", "main", "nob.old");
 		} else if (strcmp(subcmd, "clean") == 0) {
 			cmd.count = 0;
-			nob_cmd_append(&cmd, "rm", "main");
+			nob_cmd_append(&cmd, "rm", "main", "nob.old");
 			if (!nob_cmd_run_sync(cmd)) return 1;
 		} else {
 			fprintf(stderr, "Unknown subcommand: %s\n", subcmd);
 			return 1;
 		}
 	}
+	
+	cmd.count = 0;
+	nob_cmd_append(&cmd, "rm", "nob.old");
+	if (!nob_cmd_run_sync(cmd)) return 1;
 
 	return 0;
 }
