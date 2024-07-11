@@ -1,7 +1,7 @@
 #include <assert.h>
 #include <stddef.h>
 #include <stdint.h>
-#include <stdio.h> 
+#include <stdio.h>
 #include <stdlib.h>
 #include <sys/types.h>
 #include <time.h>
@@ -22,17 +22,17 @@ typedef struct {
 } FreqKV_Array;
 
 int bitwise_sub(int x, int y) {
-    while (y != 0) {
-        // Borrow contains common set bits of y and unset bits of x
-        int borrow = (~x) & y;
-        
-        // Subtraction of bits of x and y where at least one of the bits is not set
-        x = x ^ y;
-        
-        // Borrow is shifted by one so that subtracting it from x gives the required difference
-        y = borrow << 1;
-    }
-    return x;
+	while (y != 0) {
+		// Borrow contains common set bits of y and unset bits of x
+		int borrow = (~x) & y;
+
+		// Subtraction of bits of x and y where at least one of the bits is not set
+		x = x ^ y;
+
+		// Borrow is shifted by one so that subtracting it from x gives the required difference
+		y = borrow << 1;
+	}
+	return x;
 }
 
 FreqKV *find_key(FreqKV_Array haystack,  Nob_String_View needle) {
@@ -53,7 +53,7 @@ int nob_cmp_freqkv(const void *a, const void *b) {
 }
 
 void log_elapsed(struct timespec begin, struct timespec end) {
-	/* Another cool way to do this 
+	/* Another cool way to do this
 	 * double a = (double) begin.tv_sec + (double) begin.tv_nsec / 1.0e9;
 	 * double b = (double) end.tv_sec + (double) end.tv_nsec / 1.0e9;
 	 * nob_log(NOB_INFO, "Elapsed time: %f seconds", b - a);
@@ -84,26 +84,28 @@ void naive_analysis(Nob_String_View content) {
 		}
 	}
 
-	nob_log(NOB_INFO, "	 Tokens: %zu", count);
-	nob_log(NOB_INFO, "  Unique Tokens: %zu", freqs.count);
- 	assert(clock_gettime(CLOCK_MONOTONIC, &end) == 0);
-	log_elapsed(begin, end);
-
 	qsort(freqs.items, freqs.count, sizeof(freqs.items[0]), nob_cmp_freqkv);
 
+	assert(clock_gettime(CLOCK_MONOTONIC, &end) == 0);
+
+	// top 10 tokens
 	nob_log(NOB_INFO, "	 Top 10 tokens:");
+	nob_log(NOB_INFO, "	 Tokens: %zu", count);
 	for (size_t i = 1; i < freqs.count && i <= 10; ++i) {
 		nob_log(NOB_INFO, "	 %zu: "SV_Fmt" => %zu", i, SV_Arg(freqs.items[i - 1].key), freqs.items[i - 1].value);
 	}
+	nob_log(NOB_INFO, "Unique Tokens: %zu", freqs.count);
+
+	log_elapsed(begin, end);
 
 }
 
 uint32_t hash(uint8_t *data, size_t len) {
-//  uint32_t hash = (uint32_t) data[0] << 7;
-// 	for (size_t i = 0; i < len; ++i) {
-// 		uint32_t byte = (uint32_t) data[i];
-// 		hash = ((hash * 31) ^ byte);
-// 	}
+	//  uint32_t hash = (uint32_t) data[0] << 7;
+	// 	for (size_t i = 0; i < len; ++i) {
+	// 		uint32_t byte = (uint32_t) data[i];
+	// 		hash = ((hash * 31) ^ byte);
+	// 	}
 	uint64_t hash = 5381;
 	for (size_t i = 0; i < len; ++i) {
 		hash = ((hash << 5) + hash) + (uint64_t) data[i];
@@ -132,7 +134,7 @@ bool hash_analysis(Nob_String_View content) {
 	FreqKV_Array ht = { 0 };
 	hash_init(&ht, N);
 
-//	nob_log(NOB_INFO, "Tokens with Hashs:");
+	//	nob_log(NOB_INFO, "Tokens with Hashs:");
 	size_t count = 0;
 	size_t occupied = 0;
 	size_t collisions = 0;
@@ -141,7 +143,7 @@ bool hash_analysis(Nob_String_View content) {
 		Nob_String_View token  = nob_sv_chop_by_space(&content);
 
 		uint32_t h = (uint32_t) hash((uint8_t *) token.data, token.count) % ht.capacity;
-//		nob_log(NOB_INFO, "	 %zu: 0x%08X - Frequency: %zu - "SV_Fmt, count + 1, h, ht.items[h].value, SV_Arg(token));
+		//		nob_log(NOB_INFO, "	 %zu: 0x%08X - Frequency: %zu - "SV_Fmt, count + 1, h, ht.items[h].value, SV_Arg(token));
 		for (size_t i = 0; i < ht.capacity && ht.items[h].occupied && !nob_sv_eq(ht.items[h].key, token); ++i) {
 			h = (h + 1) % ht.capacity;
 			collisions++;
@@ -152,7 +154,7 @@ bool hash_analysis(Nob_String_View content) {
 				nob_log(NOB_INFO, "Table Overflow");
 				return 1;
 			}
-				ht.items[h].value++;
+			ht.items[h].value++;
 		} else {
 			ht.items[h].occupied = true;
 			ht.items[h].key = token;
@@ -168,25 +170,28 @@ bool hash_analysis(Nob_String_View content) {
 	// nob		nob_log(NOB_INFO, "	 %zu: "SV_Fmt" => %zu", i, SV_Arg(ht.items[i].key), ht.items[i].value);
 	// nob}
 
-	nob_log(NOB_INFO, "Collisions: %zu", collisions);
-	nob_log(NOB_INFO, "Occupied: %zu", occupied);
-
 	FreqKV_Array freqs = {0};
 	for (size_t i = 0; i < ht.capacity; ++i) {
 		if (ht.items[i].occupied) {
 			nob_da_append(&freqs, ht.items[i]);
 		}
 	}
-	assert(clock_gettime(CLOCK_MONOTONIC, &end) == 0);
-	log_elapsed(begin, end);
 
 	qsort(freqs.items, freqs.count, sizeof(freqs.items[0]), nob_cmp_freqkv);
 
-	nob_log(NOB_INFO, "	 Unique Tokens: %zu", freqs.count);
-	nob_log(NOB_INFO, "	 Top 10 tokens:");
-	for (size_t i = 1; i < freqs.count && i <= 10; ++i) {
+	assert(clock_gettime(CLOCK_MONOTONIC, &end) == 0);
+
+	// top 10 tokens
+	//	nob_log(NOB_INFO, "	 Top 10 tokens:");
+	for (size_t i = 1; i < freqs.count  && i <= 10; ++i) {
 		nob_log(NOB_INFO, "	 %zu: "SV_Fmt" => %zu", i, SV_Arg(freqs.items[i - 1].key), freqs.items[i - 1].value);
 	}
+
+	nob_log(NOB_INFO, "Unique Tokens: %zu", freqs.count);
+	nob_log(NOB_INFO, "Occupied: %zu", occupied);
+	nob_log(NOB_INFO, "Collisions: %zu", collisions);
+
+	log_elapsed(begin, end);
 
 	free(ht.items);
 
@@ -212,13 +217,12 @@ int main(int argc, char **argv) {
 		.count = buf.count
 	};
 
-	nob_log(NOB_INFO, "Size of %s: %zu", file_path, buf.count);
-	
-
-	// naive_analysis(content);
-	if (hash_analysis(content)) return 1;
+	naive_analysis(content);
+	// if (hash_analysis(content)) return 1;
+	nob_log(NOB_INFO, "Size of %s: %zu Bytes", file_path, buf.count);
 
 	printf("Bye, World!\n");
 
 	return 0;
 }
+

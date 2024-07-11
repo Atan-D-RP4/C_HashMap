@@ -10,7 +10,7 @@ int main(int argc, char **argv) {
 
 	Nob_Cmd cmd = {0};
 	nob_cmd_append(&cmd, "cc");
-	nob_cmd_append(&cmd, "-Wall", "-Wextra", "-ggdb", "-pedantic");
+	nob_cmd_append(&cmd, "-O3", "-Wall", "-Wextra", "-ggdb", "-pedantic");
 	nob_cmd_append(&cmd, "-o", "main");
 	nob_cmd_append(&cmd, "main.c");
 	if (!nob_cmd_run_sync(cmd)) return 1;
@@ -23,8 +23,6 @@ int main(int argc, char **argv) {
 			nob_cmd_append(&cmd, "./main");
 			nob_da_append_many(&cmd, argv, argc);
 			if (!nob_cmd_run_sync(cmd)) return 1;
-			cmd.count = 0;
-			nob_cmd_append(&cmd, "rm", "main", "nob.old");
 		} else if (strcmp(subcmd, "clean") == 0) {
 			cmd.count = 0;
 			nob_cmd_append(&cmd, "rm", "main", "nob.old");
@@ -34,10 +32,6 @@ int main(int argc, char **argv) {
 			return 1;
 		}
 	}
-	
-	cmd.count = 0;
-	nob_cmd_append(&cmd, "rm", "nob.old");
-	if (!nob_cmd_run_sync(cmd)) return 1;
 
 	return 0;
 }
